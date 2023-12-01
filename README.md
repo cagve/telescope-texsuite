@@ -20,10 +20,10 @@ There are 3 different functions
 
 |Command | Mapping | Explication |
 |--------|---------|-------------|
-|`:Telescope texsuite newcommands` | <leader>lc | List user definition commands |
-|`:Telescope texsuite labels` |<leader>ll |List labels |
-|`:Telescope texsuite headings` | <leader> lh |List headings |
-|`:Telescope texsuite frames` | <leader> lf |List of frames  |
+|`:Telescope texsuite newcommands` | leader+lc | List user definition commands |
+|`:Telescope texsuite labels` |leader+ll |List labels |
+|`:Telescope texsuite headings` | leader+lh |List headings |
+|`:Telescope texsuite frames` | leader+lf |List of frames  |
 
 
 
