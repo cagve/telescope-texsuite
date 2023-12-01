@@ -207,9 +207,14 @@ local function telescope_headings(opts)
 end
 
 
+
 return require("telescope").register_extension({
 	setup = function(ext_config, config)
 		-- Do not know how to use it.
+		vim.api.nvim_set_keymap('n', '<leader>lh', ':Telescope texsuite headings<CR>', {})
+		vim.api.nvim_set_keymap('n', '<leader>lf', ':Telescope texsuite frames<CR>', {})
+		vim.api.nvim_set_keymap('n', '<leader>lc', ':Telescope texsuite newcommands<CR>', {})
+		vim.api.nvim_set_keymap('n', '<leader>ll', ':Telescope texsuite labels<CR>', {})
 	end,
 	exports = {
 		headings = telescope_headings,
