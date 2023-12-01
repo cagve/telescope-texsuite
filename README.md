@@ -17,9 +17,14 @@ require("telescope").load_extension("texsuite")
 
 ## Usage
 There are 3 different functions
-1. `:Telescope texsuite newcommands` -> List user definition commands
-2. `:Telescope texsuite labels` -> List labels
-3. `:Telescope texsuite headings` -> List headings
+
+|Command | Mapping | Explication |
+|--------|---------|-------------|
+|`:Telescope texsuite newcommands` | <leader>lc | List user definition commands |
+|`:Telescope texsuite labels` |<leader>ll |List labels |
+|`:Telescope texsuite headings` | <leader> lh |List headings |
+|`:Telescope texsuite frames` | <leader> lf |List of frames  |
+
 
 
 ## TODO (Roadmap)
