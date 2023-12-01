@@ -8,7 +8,7 @@ Set of functions that implement telescope menus using treesitter.
 ## Installation
 To install it, follow the instruction of your favourite package manger.
 ```
-use cagve/texsuite
+use 'cagve/telescope-texsuite'
 ```
 Load the extension in your config files
 ```

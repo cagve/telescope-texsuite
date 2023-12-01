@@ -1,6 +1,7 @@
 local pickers = require "telescope.pickers"
 local finders = require "telescope.finders"
 local conf = require("telescope.config").values
+local ts_utils = require 'nvim-treesitter.ts_utils'
 local bufnr = 0
 
 local function get_latex_element(query_string)
@@ -8,13 +9,15 @@ local function get_latex_element(query_string)
 	local root = parser:parse()[1]:root()
 	local query = vim.treesitter.query.parse('latex', query_string)
 	local result = {}
-	for _,match,_ in query:iter_matches(root,bufnr, 0, -1) do
+	for _, match, _ in query:iter_matches(root, bufnr, 0, -1) do
 		for _, node in pairs(match) do
-			local text = vim.treesitter.get_node_text(node,0)
-			local line = node:range()+1
-			table.insert(result,{
+			local text = vim.treesitter.get_node_text(node, 0)
+			local line = node:range() + 1
+			table.insert(result, {
 				text = text,
-				line = line})
+				line = line,
+				node = node,
+			})
 		end
 	end
 	return result
@@ -24,7 +27,7 @@ local function get_newcommands()
 	local query = "(new_command_definition) @new_command"
 	local commands = {}
 	local results = get_latex_element(query)
-	for _,result in pairs(results) do
+	for _, result in pairs(results) do
 		local entry = {
 			text = result.text,
 			line = result.line,
@@ -40,7 +43,7 @@ local function get_labels()
 	local query = "(label_definition (curly_group_text (text) @label_title))"
 	local labels = {}
 	local results = get_latex_element(query)
-	for _,result in pairs(results) do
+	for _, result in pairs(results) do
 		local entry = {
 			text = result.text,
 			line = result.line,
@@ -52,21 +55,54 @@ local function get_labels()
 	return labels
 end
 
-local function get_headings()
-    local headings = {}
-    local matches = {
-        'part',
-        'chapter',
-        'section',
-        'subsection',
-        'subsubsection',
-        'paragraph',
-        'subparagraph',
-    }
+local function get_frames()
+	local frames = {}
+	local query = '(generic_environment (begin (curly_group_text (text (word) @frame (#eq? @frame "frame"))))) @general'
+	local results = get_latex_element(query)
+	local counter = 0
+	local frame = 0
+	for _, result in pairs(results) do
+		if counter % 2 ~= 0 then -- to get just one captures instead of 2
+			frame = frame +1
+			local node = result.node
+			local frame_title_node = node:child(1)
+			local title = " "
+			if frame_title_node ~= nil then
+				local node_text = vim.treesitter.get_node_text(frame_title_node, 0)
+				if string.find(node_text, "frametitle") then
+					title = ": "..node_text:match("{(.-)}")
+				end
+			end
 
-	for _,type in pairs(matches) do
-		local results = get_latex_element("("..type.."(curly_group (text) @section))")
-		for _,result in pairs(results) do
+			local entry = {
+				type = type,
+				text = "Frame "..frame..title,
+				line = result.line,
+				path = vim.api.nvim_buf_get_name(0)
+			}
+			table.insert(frames, entry)
+		end
+		counter = counter + 1
+	end
+	print(frames)
+	return frames
+end
+
+local function get_headings()
+	local headings = {}
+	local matches = {
+		'part',
+		'chapter',
+		'section',
+		'subsection',
+		'subsubsection',
+		'paragraph',
+		'subparagraph',
+	}
+
+	for _, type in pairs(matches) do
+		local results = get_latex_element("(" .. type .. "(curly_group (text) @section))")
+		for _, result in pairs(results) do
 			local entry = {
 				type = type,
 				text = result.text,
@@ -76,7 +112,7 @@ local function get_headings()
 			table.insert(headings, entry)
 		end
 	end
-    return headings
+	return headings
 end
 
 local function telescope_newcommands(opts)
@@ -99,7 +135,7 @@ local function telescope_newcommands(opts)
 		previewer = conf.qflist_previewer(opts),
 		sorter = conf.file_sorter(opts),
 	})
-	:find()
+		:find()
 end
 
 local function telescope_labels(opts)
@@ -124,6 +160,29 @@ local function telescope_labels(opts)
 	}):find()
 end
 
+local function telescope_frames(opts)
+	local headings = get_frames()
+	pickers.new(opts, {
+		prompt_title = 'Select frame',
+		results_title = 'Frames',
+		finder = finders.new_table {
+			results = headings,
+			entry_maker = function(entry)
+				return {
+					value = entry,
+					display = entry.text,
+					ordinal = entry.text,
+					filename = entry.path,
+					lnum = entry.line
+				}
+			end
+		},
+		previewer = conf.qflist_previewer(opts),
+		sorter = conf.file_sorter(opts),
+	})
+		:find()
+end
+
 local function telescope_headings(opts)
 	local headings = get_headings()
 	pickers.new(opts, {
@@ -134,8 +193,8 @@ local function telescope_headings(opts)
 			entry_maker = function(entry)
 				return {
 					value = entry,
-					display = entry.type ..": "..entry.text,
-					ordinal = entry.type ..": "..entry.text,
+					display = entry.type .. ": " .. entry.text,
+					ordinal = entry.type .. ": " .. entry.text,
 					filename = entry.path,
 					lnum = entry.line
 				}
@@ -144,7 +203,7 @@ local function telescope_headings(opts)
 		previewer = conf.qflist_previewer(opts),
 		sorter = conf.file_sorter(opts),
 	})
-	:find()
+		:find()
 end
 
 
@@ -155,6 +214,7 @@ return require("telescope").register_extension({
 	exports = {
 		headings = telescope_headings,
 		labels = telescope_labels,
+		frames = telescope_frames,
 		newcommands = telescope_newcommands
 	},
 })
