@@ -125,8 +125,8 @@ local function telescope_newcommands(opts)
 				local selection = action_state.get_selected_entry()
 				local pattern = "{([^{}]+)}"
 				local resultTable = {}
-				print(selection)
-				print(selection[1])
+				print(vim.inspect(selection))
+				print(selection[0])
 				-- for match in selection[1]:gmatch(pattern) do
 				-- 	table.insert(resultTable, match)
 				-- end
