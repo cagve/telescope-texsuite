@@ -5,6 +5,7 @@ local finders = require "telescope.finders"
 local conf = require("telescope.config").values
 local bufnr = 0
 
+
 local function get_latex_element(query_string)
 	local parser = vim.treesitter.get_parser(bufnr, "latex")
 	local root = parser:parse()[1]:root()
@@ -121,10 +122,11 @@ local function telescope_newcommands(opts)
 				actions.close(prompt_bufnr)
 				local selection = action_state.get_selected_entry()
 				local pattern = "{([^{}]+)}"
-
-				-- Use string.match to find the match in the input string
-				local result = selection[1]:match(pattern)
-				vim.api.nvim_put({ result }, "", false, true)
+				local resultTable = {}
+				for match in selection[1]:gmatch(pattern) do
+					table.insert(resultTable, match)
+				end
+				vim.api.nvim_put({ resultTable[2] }, "", false, true)
 			end)
 			return true
 		end,
