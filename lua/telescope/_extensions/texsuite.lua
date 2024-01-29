@@ -119,21 +119,21 @@ local function telescope_newcommands(opts)
 		},
 		previewer = conf.qflist_previewer(opts),
 		sorter = conf.file_sorter(opts),
-		-- attach_mappings = function(prompt_bufnr, _)
-		-- 	actions.select_default:replace(function()
-		-- 		actions.close(prompt_bufnr)
-		-- 		local selection = action_state.get_selected_entry()
-		-- 		-- local pattern = "{([^{}]+)}"
-		-- 		-- local resultTable = {}
-		-- 		-- for match in selection[1]:gmatch(pattern) do
-		-- 		-- 	table.insert(resultTable, match)
-		-- 		-- end
-		-- 		print(vim.inspect(selection))
-		-- 		-- vim.api.nvim_put({ resultTable[2] }, "", false, true)
-		-- 		vim.api.nvim_put({ selection[2] }, "", false, true)
-		-- 	end)
-		-- 	return true
-		-- end,
+		attach_mappings = function(prompt_bufnr, _)
+			actions.select_default:replace(function()
+				actions.close(prompt_bufnr)
+				local selection = action_state.get_selected_entry()
+				-- local pattern = "{([^{}]+)}"
+				-- local resultTable = {}
+				-- for match in selection[1]:gmatch(pattern) do
+				-- 	table.insert(resultTable, match)
+				-- end
+				print(vim.inspect(selection))
+				-- vim.api.nvim_put({ resultTable[2] }, "", false, true)
+				vim.api.nvim_put({ selection[2] }, "", false, true)
+			end)
+			return true
+		end,
 	})
 	:find()
 end
