@@ -126,7 +126,8 @@ local function telescope_newcommands(opts)
 				for match in selection[1]:gmatch(pattern) do
 					table.insert(resultTable, match)
 				end
-				vim.api.nvim_put({ resultTable[2] }, "", false, true)
+				print(resultTable[2])
+				-- vim.api.nvim_put({ resultTable[2] }, "", false, true)
 			end)
 			return true
 		end,
