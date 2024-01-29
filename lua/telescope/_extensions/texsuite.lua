@@ -1,3 +1,5 @@
+local actions = require "telescope.actions"
+local action_state = require("telescope.actions.state")
 local pickers = require "telescope.pickers"
 local finders = require "telescope.finders"
 local conf = require("telescope.config").values
@@ -79,6 +81,24 @@ local function get_headings()
     return headings
 end
 
+local function get_frames()
+    local frames = {}
+	local frames_query ='(generic_environment (begin (curly_group_text (text) @frame (#eq? @frame "frame") generic_command (command_name) @command )))'
+	
+	local results = get_latex_element(frames_query)
+	for _,result in pairs(results) do
+		local entry = {
+			type = type,
+			text = result.text,
+			line = result.line,
+			path = vim.api.nvim_buf_get_name(0)
+		}
+		table.insert(frames, entry)
+	end
+	return frames
+end
+
+
 local function telescope_newcommands(opts)
 	opts = opts or {}
 	pickers.new(opts, {
@@ -96,6 +116,14 @@ local function telescope_newcommands(opts)
 				}
 			end
 		},
+		attach_mappings = function(prompt_bufnr, map)
+			actions.select_default:replace(function()
+				actions.close(prompt_bufnr)
+				local selection = action_state.get_selected_entry()
+				vim.api.nvim_put({ selection[1] }, "", false, true)
+			end)
+			return true
+		end,
 		previewer = conf.qflist_previewer(opts),
 		sorter = conf.file_sorter(opts),
 	})
@@ -122,6 +150,65 @@ local function telescope_labels(opts)
 		previewer = conf.qflist_previewer(opts),
 		sorter = conf.file_sorter(opts),
 	}):find()
+end
+
+local function add_template_file(file)
+	local current_path = vim.fn.expand('%:p:h')
+	local current_file = vim.fn.expand('%:t')
+	local filename = file:match("^.+/(.+)$")
+	os.execute("cp "..file.." "..current_path.."/"..filename)
+	local pos = vim.api.nvim_win_get_cursor(0)
+	vim.api.nvim_buf_set_lines(0, pos[1]-1, pos[1]-1, false, {"\\include{"..file.."}"})
+end
+
+local function telescope_templates(opts)
+	local temp_path = os.getenv("HOME").."/Phd/Templates"
+	local command = "fdfind -t f . '"..temp_path.."'"
+	local lines = {}
+	local file = io.popen(command)
+	for line in file:lines() do
+		table.insert(lines, line)
+	end
+    file:close()
+
+	pickers.new({}, {
+		prompt_title = "Templates",
+		finder = finders.new_table{ results = lines},
+		sorter = conf.generic_sorter(opts),
+		previewer = conf.qflist_previewer(opts),
+		attach_mappings = function(prompt_bufnr)
+			actions.select_default:replace(function()
+				actions.close(prompt_bufnr)
+				local selection = action_state.get_selected_entry()
+				add_template_file(selection[1])
+			end)
+			return true
+		end,
+	}):find()
+end
+
+
+local function telescope_frames(opts)
+	local frames = get_frames()
+	pickers.new(opts, {
+		prompt_title = 'Select frame',
+		results_title = 'Frames',
+		finder = finders.new_table {
+			results = frames,
+			entry_maker = function(entry)
+				return {
+					value = entry,
+					display = entry.text,
+					ordinal = entry.text,
+					filename = entry.path,
+					lnum = entry.line
+				}
+			end
+		},
+		previewer = conf.qflist_previewer(opts),
+		sorter = conf.file_sorter(opts),
+	})
+	:find()
 end
 
 local function telescope_headings(opts)
@@ -155,6 +242,8 @@ return require("telescope").register_extension({
 	exports = {
 		headings = telescope_headings,
 		labels = telescope_labels,
-		newcommands = telescope_newcommands
+		newcommands = telescope_newcommands,
+		templates = telescope_templates,
+		frames = telescope_frames
 	},
 })
