@@ -126,7 +126,7 @@ local function telescope_newcommands(opts)
 				local pattern = "{([^{}]+)}"
 
 				-- Use string.match to find the match in the input string \newcommad{estecoge}{este no}
-				local result = selection:match(pattern)
+				local result = selection[1]:match(pattern)
 				vim.api.nvim_put({ result }, "", false, true)
 			end)
 			return true
