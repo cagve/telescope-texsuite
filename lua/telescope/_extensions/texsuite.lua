@@ -124,14 +124,9 @@ local function telescope_newcommands(opts)
 				actions.close(prompt_bufnr)
 				local selection = action_state.get_selected_entry()
 				local pattern = "{([^{}]+)}"
-				local resultTable = {}
-				print(vim.inspect(selection))
-				print(selection['value'])
-				-- for match in selection[1]:gmatch(pattern) do
-				-- 	table.insert(resultTable, match)
-				-- end
-				-- vim.api.nvim_put({ resultTable[1] }, "", false, true)
-				-- vim.api.nvim_put({ selection[2] }, "", false, true)
+				local value = selection['value']
+				local result = value:match(pattern)
+				vim.api.nvim_put({ result }, "", false, true)
 			end)
 			return true
 		end,
