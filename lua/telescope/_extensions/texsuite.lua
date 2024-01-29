@@ -120,7 +120,11 @@ local function telescope_newcommands(opts)
 			actions.select_default:replace(function()
 				actions.close(prompt_bufnr)
 				local selection = action_state.get_selected_entry()
-				vim.api.nvim_put({ selection[1] }, "", false, true)
+				local pattern = "{([^{}]+)}"
+
+				-- Use string.match to find the match in the input string
+				local result = selection[1]:match(pattern)
+				vim.api.nvim_put({ result }, "", false, true)
 			end)
 			return true
 		end,
